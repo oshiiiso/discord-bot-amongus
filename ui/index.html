@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AmongUs-Bot</title>
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body class="page page--main">
+    <div class="app-shell app-shell--main">
+      <header class="titlebar">
+        <div class="titlebar__drag">
+          <span class="titlebar__title">AmongUs-Bot</span>
+          <span class="titlebar__subtitle">VCサーバーミュート</span>
+        </div>
+        <div class="titlebar__actions">
+          <div class="titlebar-menu">
+            <button
+              class="titlebar__btn"
+              id="titlebar-menu"
+              type="button"
+              title="メニュー"
+              aria-label="メニュー"
+              aria-expanded="false"
+              aria-haspopup="true"
+            >
+              ☰
+            </button>
+            <div class="titlebar-menu__dropdown" id="titlebar-menu-dropdown" hidden>
+              <button class="titlebar-menu__item" type="button" data-action="help">ヘルプ</button>
+              <button class="titlebar-menu__item" type="button" data-action="contact">問い合わせ</button>
+              <div class="titlebar-menu__divider" role="separator"></div>
+              <div class="titlebar-menu__version" id="titlebar-menu-version">バージョン</div>
+              <button class="titlebar-menu__item" type="button" data-action="check-update">
+                アップデートを確認
+              </button>
+            </div>
+          </div>
+          <button
+            class="titlebar__btn"
+            id="titlebar-settings"
+            type="button"
+            title="設定"
+            aria-label="設定"
+          >
+            ⚙
+          </button>
+          <button
+            class="titlebar__btn titlebar__btn--close"
+            id="titlebar-close"
+            type="button"
+            title="閉じる"
+            aria-label="閉じる"
+          >
+            ×
+          </button>
+        </div>
+      </header>
+
+      <main class="panel panel--main">
+        <section class="setup-card" id="setup-card" hidden>
+          <h2 class="setup-card__title">はじめに</h2>
+          <p class="setup-card__lead">
+            Developer Portalで作ったBotのトークンを入力してください。
+          </p>
+          <form class="setup-form" id="setup-form">
+            <label class="field">
+              <span>Botトークン</span>
+              <input
+                id="setup-token"
+                type="password"
+                placeholder="Botタブでコピーしたトークン"
+                autocomplete="off"
+                required
+              />
+            </label>
+            <button class="btn btn--primary btn--block" id="setup-submit" type="submit">
+              接続する
+            </button>
+          </form>
+          <p class="setup-card__hint" id="setup-feedback" aria-live="polite"></p>
+        </section>
+
+        <div class="main-content" id="main-content">
+          <section class="hint-card" id="storage-setup" hidden>
+            <div class="hint-card__body">
+              <p class="hint-card__text">
+                設定ファイルの保存先を選んでください。
+              </p>
+              <p class="hint-card__path" id="storage-setup-path"></p>
+            </div>
+            <div class="hint-card__actions">
+              <button class="btn btn--ghost btn--small" id="storage-setup-change" type="button">
+                保存先を変更
+              </button>
+              <button class="btn btn--primary btn--small" id="storage-setup-confirm" type="button">
+                このまま使う
+              </button>
+            </div>
+          </section>
+
+          <section class="hint-card" id="tray-hint" hidden>
+            <p class="hint-card__text">
+              ×ボタンでアプリを終了します。ゲーム中も動かしっぱなしにしたい場合は、設定 → 動作 で「トレイに格納」をオンにできます。
+            </p>
+            <button class="btn btn--ghost btn--small" id="tray-hint-dismiss" type="button">
+              了解
+            </button>
+          </section>
+
+          <section class="update-banner" id="update-banner" hidden>
+            <div class="update-banner__body">
+              <p class="update-banner__text" id="update-banner-text"></p>
+            </div>
+            <div class="update-banner__actions" id="update-banner-actions"></div>
+          </section>
+
+          <section class="status-card" id="status-card">
+            <div class="status-card__indicator">
+              <span class="status-dot" id="status-dot"></span>
+            </div>
+            <div class="status-card__body">
+              <p class="status-label" id="status-label">読み込み中...</p>
+              <p class="status-detail" id="status-detail"></p>
+            </div>
+          </section>
+
+          <section class="info-card">
+            <div class="info-card__header">
+              <h2 class="info-card__title">操作対象</h2>
+              <span class="mute-badge" id="mute-badge" hidden>ミュート中</span>
+              <select class="preset-select" id="preset-select" title="VCプリセット"></select>
+            </div>
+            <dl class="info-list">
+              <div class="info-list__row">
+                <dt>サーバー</dt>
+                <dd id="target-guild-name">未設定</dd>
+              </div>
+              <div class="info-list__row">
+                <dt>VC</dt>
+                <dd id="target-vc-name">未設定</dd>
+              </div>
+              <div class="info-list__row">
+                <dt>人数</dt>
+                <dd id="target-member-count">-</dd>
+              </div>
+            </dl>
+            <p class="permission-warning" id="permission-warning" hidden></p>
+          </section>
+
+          <section class="actions actions--main">
+            <button class="action-btn action-btn--mute" id="mute-btn" type="button">
+              <span class="action-btn__icon" aria-hidden="true">🔇</span>
+              <span class="action-btn__text">
+                <span class="action-btn__label">全員ミュート</span>
+                <span class="action-btn__hint" id="shortcut-mute-hint"></span>
+              </span>
+            </button>
+            <button class="action-btn action-btn--unmute" id="unmute-btn" type="button">
+              <span class="action-btn__icon" aria-hidden="true">🔊</span>
+              <span class="action-btn__text">
+                <span class="action-btn__label">ミュート解除</span>
+                <span class="action-btn__hint" id="shortcut-unmute-hint"></span>
+              </span>
+            </button>
+          </section>
+
+          <div class="feedback-bar" id="feedback" aria-live="polite"></div>
+
+          <section class="history-card" id="history-card">
+            <h2 class="history-card__title">操作履歴</h2>
+            <ul class="history-list" id="history-list">
+              <li class="history-list__empty">まだ操作がありません</li>
+            </ul>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/titlebar.js"></script>
+    <script src="js/window-fit.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

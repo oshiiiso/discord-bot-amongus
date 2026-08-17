@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AmongUs-Bot 問い合わせ</title>
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body class="page page--contact">
+    <div class="app-shell app-shell--contact">
+      <header class="titlebar">
+        <div class="titlebar__drag">
+          <span class="titlebar__title">問い合わせ</span>
+          <span class="titlebar__subtitle">不具合・要望</span>
+        </div>
+        <div class="titlebar__actions">
+          <button
+            class="titlebar__btn titlebar__btn--close"
+            id="titlebar-close"
+            type="button"
+            title="閉じる"
+            aria-label="閉じる"
+          >
+            ×
+          </button>
+        </div>
+      </header>
+
+      <main class="panel panel--contact">
+        <form class="contact-form" id="contact-form">
+          <p class="contact-form__lead">
+            不具合や要望をお送りください。メールアプリまたはIssueページが開きます。
+          </p>
+
+          <label class="field">
+            <span>件名</span>
+            <input id="contact-subject" type="text" placeholder="例: ミュートが効かない" required />
+          </label>
+
+          <label class="field">
+            <span>連絡先（任意）</span>
+            <input id="contact-reply" type="text" placeholder="Discord名やメール" />
+          </label>
+
+          <label class="field">
+            <span>内容</span>
+            <textarea
+              id="contact-message"
+              rows="8"
+              placeholder="状況や再現手順を書いてください"
+              required
+            ></textarea>
+          </label>
+
+          <p class="contact-form__version" id="contact-version"></p>
+
+          <button class="btn btn--primary btn--block" id="contact-submit" type="submit">
+            送信
+          </button>
+          <p class="contact-form__feedback" id="contact-feedback" aria-live="polite"></p>
+        </form>
+      </main>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/titlebar.js"></script>
+    <script src="js/contact.js"></script>
+  </body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AmongUs-Bot ヘルプ</title>
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body class="page page--help">
+    <div class="app-shell app-shell--help">
+      <header class="titlebar">
+        <div class="titlebar__drag">
+          <span class="titlebar__title">ヘルプ</span>
+          <span class="titlebar__subtitle">利用ガイド</span>
+        </div>
+        <div class="titlebar__actions">
+          <button
+            class="titlebar__btn titlebar__btn--close"
+            id="titlebar-close"
+            type="button"
+            title="閉じる"
+            aria-label="閉じる"
+          >
+            ×
+          </button>
+        </div>
+      </header>
+
+      <main class="panel panel--help">
+        <article class="help-content" id="help-content">
+          <p class="help-loading">読み込み中...</p>
+        </article>
+      </main>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/titlebar.js"></script>
+    <script src="js/help.js"></script>
+  </body>
+</html>

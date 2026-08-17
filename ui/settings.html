@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AmongUs-Bot 設定</title>
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body class="page page--settings">
+    <div class="app-shell app-shell--settings">
+      <header class="titlebar">
+        <div class="titlebar__drag">
+          <span class="titlebar__title">設定</span>
+          <span class="titlebar__subtitle">VC・ショートカット・動作</span>
+        </div>
+        <div class="titlebar__actions">
+          <button
+            class="titlebar__btn titlebar__btn--close"
+            id="titlebar-close"
+            type="button"
+            title="閉じる"
+            aria-label="閉じる"
+          >
+            ×
+          </button>
+        </div>
+      </header>
+
+      <main class="panel panel--settings">
+        <form class="settings-form" id="settings-form">
+          <nav class="settings-tabs" role="tablist" aria-label="設定カテゴリ">
+            <button
+              class="settings-tab is-active"
+              type="button"
+              role="tab"
+              aria-selected="true"
+              data-tab="presets"
+            >
+              VC
+            </button>
+            <button
+              class="settings-tab"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              data-tab="shortcuts"
+            >
+              ショートカット
+            </button>
+            <button
+              class="settings-tab"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              data-tab="behavior"
+            >
+              動作
+            </button>
+            <button
+              class="settings-tab"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              data-tab="bot"
+            >
+              Bot
+            </button>
+          </nav>
+
+          <div class="settings-tab-panels">
+            <section
+              class="settings-tab-panel is-active"
+              role="tabpanel"
+              data-tab-panel="presets"
+            >
+              <div class="settings-tab-panel__header">
+                <h2 class="settings-tab-panel__title">VCプリセット</h2>
+                <button class="btn btn--ghost btn--small" id="add-preset-btn" type="button">
+                  追加
+                </button>
+              </div>
+              <div class="preset-list" id="preset-list"></div>
+              <small class="settings-tab-panel__hint">
+                開発者モードでチャンネルを右クリック → IDをコピー
+              </small>
+            </section>
+
+            <section class="settings-tab-panel" role="tabpanel" data-tab-panel="shortcuts">
+              <h2 class="settings-tab-panel__title">ショートカット</h2>
+              <label class="field">
+                <span>全員ミュート</span>
+                <input
+                  class="shortcut-input"
+                  id="shortcut-mute"
+                  name="muteAll"
+                  type="text"
+                  readonly
+                />
+              </label>
+              <label class="field">
+                <span>ミュート解除</span>
+                <input
+                  class="shortcut-input"
+                  id="shortcut-unmute"
+                  name="unmuteAll"
+                  type="text"
+                  readonly
+                />
+                <small>欄をクリックして、使いたいキーを押す</small>
+              </label>
+            </section>
+
+            <section class="settings-tab-panel" role="tabpanel" data-tab-panel="behavior">
+              <h2 class="settings-tab-panel__title">動作</h2>
+              <div class="field" id="storage-field" hidden>
+                <span>設定の保存先</span>
+                <p class="field__path" id="storage-path"></p>
+                <div class="input-row">
+                  <button class="btn btn--ghost btn--small" id="storage-change-btn" type="button">
+                    変更
+                  </button>
+                  <button class="btn btn--ghost btn--small" id="storage-reset-btn" type="button">
+                    デフォルトに戻す
+                  </button>
+                </div>
+                <small id="storage-hint">変更後はアプリが再起動します</small>
+              </div>
+              <p class="settings-tab-panel__hint" id="storage-portable-note" hidden>
+                ポータブル版のため、アプリフォルダ内に保存されます。
+              </p>
+              <label class="field field--checkbox">
+                <input id="minimize-to-tray" name="minimizeToTray" type="checkbox" />
+                <span>×ボタンでトレイに格納</span>
+              </label>
+            </section>
+
+            <section class="settings-tab-panel" role="tabpanel" data-tab-panel="bot">
+              <h2 class="settings-tab-panel__title">Botトークン</h2>
+              <label class="field">
+                <span>トークン</span>
+                <div class="input-row">
+                  <input
+                    id="discord-token"
+                    name="discordToken"
+                    type="password"
+                    placeholder="Botタブでコピーしたトークン"
+                    autocomplete="off"
+                    disabled
+                  />
+                  <button
+                    class="btn btn--ghost btn--small"
+                    id="token-change-btn"
+                    type="button"
+                    hidden
+                  >
+                    変更
+                  </button>
+                </div>
+                <small id="token-status">未設定</small>
+              </label>
+            </section>
+          </div>
+
+          <div class="settings-actions">
+            <button class="btn btn--primary btn--block" type="submit">保存</button>
+          </div>
+        </form>
+
+        <div class="feedback-bar" id="feedback" aria-live="polite"></div>
+      </main>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/titlebar.js"></script>
+    <script src="js/window-fit.js"></script>
+    <script src="js/settings.js"></script>
+  </body>
+</html>

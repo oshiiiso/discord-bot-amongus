@@ -1,0 +1,44 @@
+# Virtual Environment
+.venv/
+
+# Environment
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.python-version
+
+# Logs
+logs/
+*.log
+
+# 生成データ（送信済みコード・固定メッセージID）
+data/
+
+# VS Code
+.vscode/
+
+# Pytest
+.pytest_cache/
+
+# Ruff
+.ruff_cache/
+
+# mypy
+.mypy_cache/
+
+# State
+storage/state.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node.js / Electron (AmongUs-Bot)
+node_modules/
+dist/
+release/
+config.json

@@ -1,0 +1,52 @@
+{
+  "name": "amongus-bot",
+  "version": "0.1.0",
+  "description": "Among Us用 VCサーバーミュート操作",
+  "main": "dist/main/index.js",
+  "author": "",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && electron .",
+    "dev": "tsc && electron .",
+    "pack": "npm run build && electron-builder --dir",
+    "dist:portable": "npm run build && electron-builder --win zip -c.extraFiles.0.from=.portable -c.extraFiles.0.to=.portable",
+    "dist:installer": "npm run build && electron-builder --win nsis",
+    "dist": "npm run dist:portable"
+  },
+  "dependencies": {
+    "discord.js": "^14.22.1",
+    "dotenv": "^17.2.1",
+    "electron-store": "^8.2.0",
+    "electron-updater": "^6.8.9"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "electron": "^37.3.0",
+    "electron-builder": "^26.0.12",
+    "typescript": "^5.9.2"
+  },
+  "build": {
+    "appId": "com.amongus.bot",
+    "productName": "AmongUs-Bot",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "ui/**/*",
+      "assets/**/*",
+      "docs/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "zip"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
