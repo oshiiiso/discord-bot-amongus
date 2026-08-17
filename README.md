@@ -2,6 +2,8 @@
 
 Among Us用 VCサーバーミュート操作パネル（Electron + discord.js）
 
+**配布形式: ポータブル ZIP のみ**（解凍して `AmongUs-Bot.exe` を起動）
+
 - リポジトリ: https://github.com/oshiiiso/discord-bot-amongus
 - 不具合・要望: [Issues](https://github.com/oshiiiso/discord-bot-amongus/issues)
 - ダウンロード: [Releases](https://github.com/oshiiiso/discord-bot-amongus/releases)
@@ -12,8 +14,8 @@ Among Us用 VCサーバーミュート操作パネル（Electron + discord.js）
 
 - VC全員のサーバーミュート / 解除（ミュートセッション対応）
 - VCプリセット・グローバルショートカット・トレイ常駐
-- ポータブル配布対応（`.portable` マーカーでルート配下に設定・ログを保存）
-- ヘルプ・問い合わせ・アップデート通知（配布版）
+- ポータブル配布（設定・ログは exe と同じフォルダに保存）
+- ヘルプ・問い合わせ・アップデート通知
 
 ## ディレクトリ構成
 
@@ -24,8 +26,8 @@ src/shared/         # 共通型・設定・パス解決
 ui/                 # 操作パネル・設定画面
 assets/             # トレイアイコンなど
 docs/USER.md        # 利用者向けガイド
-data/               # ポータブル時の設定（.gitignore）
-logs/               # ログ（.gitignore）
+data/               # 開発時の設定（.gitignore）
+logs/               # 開発時のログ（.gitignore）
 release/            # ビルド出力（.gitignore）
 ```
 
@@ -36,6 +38,8 @@ npm install
 copy .env.example .env   # 任意
 npm start
 ```
+
+開発時も配布版と同じ挙動にするには、プロジェクトルートに `.portable` を置く（リポジトリに同梱済み）。
 
 ### 環境変数（`.env`）
 
@@ -51,8 +55,7 @@ npm start
 | `BOT_RECONNECT_MAX_MS` | 再接続待機の上限 | `60000` |
 | `OPERATION_HISTORY_LIMIT` | 操作履歴の件数 | `5` |
 | `WINDOW_BACKGROUND` | ウィンドウ背景色 | `#141517` |
-| `PORTABLE` | `1` でポータブルモード強制 | — |
-| `SUPPORT_EMAIL` | 問い合わせ先メール（配布版） | — |
+| `SUPPORT_EMAIL` | 問い合わせ先メール（配布 ZIP 同梱用） | — |
 | `ISSUES_URL` | 問い合わせ先 Issue URL | — |
 | `GITHUB_OWNER` | アップデート通知用 GitHub オーナー | — |
 | `GITHUB_REPO` | アップデート通知用リポジトリ名 | — |
@@ -61,44 +64,46 @@ npm start
 
 `.env` は Git に含めない。配布 ZIP には公開情報のみ入れる（Bot トークンはアプリ内設定）。
 
-### ポータブルモード
+### ポータブル版のフォルダ構成
 
-以下のいずれかで有効化。設定・ログはアプリルート直下に保存される。
-
-- ルートに `.portable` ファイルがある
-- 環境変数 `PORTABLE=1`
+配布 ZIP を解凍すると、おおよそ次の構成になる。
 
 ```
 AmongUs-Bot/
   AmongUs-Bot.exe
-  .portable
-  data/config.json
-  logs/
-  .env              # 任意
+  .portable              # ポータブルモードのマーカー（同梱）
+  .env                   # 問い合わせ先・アップデート設定（配布時に同梱）
+  data/config.json       # 初回起動後に作成（Botトークン・VC設定）
+  logs/                  # 初回起動後に作成
+  resources/
+  ...
 ```
 
-開発時はプロジェクトルートの `.portable` により同じ挙動になる。
+設定・ログはすべて exe と同じフォルダ配下に保存される。フォルダごとコピーすれば設定も引き継げる。
 
-## ビルド
+## ビルド（配布用 ZIP）
 
 ```powershell
-# ポータブル版（ZIP。 .portable 同梱）
-npm run dist:portable
-
-# インストーラー版（設定は %APPDATA%）
-npm run dist:installer
+npm run dist
 ```
+
+`dist` は `dist:portable` と同じ。`.portable` を同梱した ZIP を生成する。
 
 | コマンド | 出力 |
 |---|---|
-| `npm run pack` | `release/win-unpacked/`（未圧縮） |
-| `npm run dist:portable` | `release/AmongUs-Bot-x.x.x-win.zip` |
-| `npm run dist:installer` | `release/AmongUs-Bot Setup x.x.x.exe` |
+| `npm run pack` | `release/win-unpacked/`（ZIP 化前の確認用） |
+| `npm run dist` | `release/AmongUs-Bot-x.x.x-win.zip` |
+
+### 配布 ZIP の作り方
+
+1. `npm run dist` を実行
+2. `release/win-unpacked/` に公開用 `.env` を置く（または ZIP 解凍後に手動で同梱）
+3. 必要なら再 ZIP 化して [Releases](https://github.com/oshiiiso/discord-bot-amongus/releases) にアップロード
 
 ## アーキテクチャ（概要）
 
-1. `src/main/index.ts` がElectronを起動しBotを同時起動
-2. UI操作はIPC経由で `src/bot/services/voice-service.ts` を呼び出す
+1. `src/main/index.ts` が Electron を起動し Bot を同時起動
+2. UI 操作は IPC 経由で `src/bot/services/voice-service.ts` を呼び出す
 3. ミュートセッション中は `voiceStateUpdate` で参加・退出を監視
 4. 設定は `electron-store`（`src/shared/config-store.ts`）
 
