@@ -2,6 +2,10 @@
 
 Among Us用 VCサーバーミュート操作パネル（Electron + discord.js）
 
+- リポジトリ: https://github.com/oshiiiso/discord-bot-amongus
+- 不具合・要望: [Issues](https://github.com/oshiiiso/discord-bot-amongus/issues)
+- ダウンロード: [Releases](https://github.com/oshiiiso/discord-bot-amongus/releases)
+
 利用者向けの手順は [docs/USER.md](docs/USER.md) を参照。
 
 ## 機能概要
@@ -9,6 +13,7 @@ Among Us用 VCサーバーミュート操作パネル（Electron + discord.js）
 - VC全員のサーバーミュート / 解除（ミュートセッション対応）
 - VCプリセット・グローバルショートカット・トレイ常駐
 - ポータブル配布対応（`.portable` マーカーでルート配下に設定・ログを保存）
+- ヘルプ・問い合わせ・アップデート通知（配布版）
 
 ## ディレクトリ構成
 
@@ -47,6 +52,14 @@ npm start
 | `OPERATION_HISTORY_LIMIT` | 操作履歴の件数 | `5` |
 | `WINDOW_BACKGROUND` | ウィンドウ背景色 | `#141517` |
 | `PORTABLE` | `1` でポータブルモード強制 | — |
+| `SUPPORT_EMAIL` | 問い合わせ先メール（配布版） | — |
+| `ISSUES_URL` | 問い合わせ先 Issue URL | — |
+| `GITHUB_OWNER` | アップデート通知用 GitHub オーナー | — |
+| `GITHUB_REPO` | アップデート通知用リポジトリ名 | — |
+| `UPDATE_FEED_URL` | カスタム更新フィード URL（`GITHUB_*` の代わり） | — |
+| `USER_GUIDE_PATH` | ヘルプ表示用 Markdown のパス | `docs/USER.md` |
+
+`.env` は Git に含めない。配布 ZIP には公開情報のみ入れる（Bot トークンはアプリ内設定）。
 
 ### ポータブルモード
 
@@ -91,4 +104,6 @@ npm run dist:installer
 
 ## ライセンス
 
-MIT
+MIT License — Copyright (c) 2026 oshiiiso
+
+詳細は [LICENSE](LICENSE) を参照。
