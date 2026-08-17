@@ -61,7 +61,7 @@
         <section class="setup-card" id="setup-card" hidden>
           <h2 class="setup-card__title">はじめに</h2>
           <p class="setup-card__lead">
-            Developer Portalで作ったBotのトークンを入力してください。
+            Botトークンと操作対象のVCを設定してください。管理者から受け取った情報を入力します。
           </p>
           <form class="setup-form" id="setup-form">
             <label class="field">
@@ -71,8 +71,40 @@
                 type="password"
                 placeholder="Botタブでコピーしたトークン"
                 autocomplete="off"
+              />
+              <small id="setup-token-hint">Developer Portal の Bot タブでコピー</small>
+            </label>
+            <label class="field">
+              <span>プリセット名</span>
+              <input
+                id="setup-preset-name"
+                type="text"
+                placeholder="例: ゲーム用VC"
+                value="ゲーム用VC"
                 required
               />
+            </label>
+            <label class="field">
+              <span>サーバーID</span>
+              <input
+                id="setup-guild-id"
+                type="text"
+                placeholder="例: 123456789012345678"
+                inputmode="numeric"
+                required
+              />
+              <small>開発者モードでサーバー名を右クリック → IDをコピー</small>
+            </label>
+            <label class="field">
+              <span>VCチャンネルID</span>
+              <input
+                id="setup-vc-id"
+                type="text"
+                placeholder="例: 987654321098765432"
+                inputmode="numeric"
+                required
+              />
+              <small>開発者モードでVC名を右クリック → IDをコピー</small>
             </label>
             <button class="btn btn--primary btn--block" id="setup-submit" type="submit">
               接続する
@@ -84,7 +116,7 @@
         <div class="main-content" id="main-content">
           <section class="hint-card" id="tray-hint" hidden>
             <p class="hint-card__text">
-              ×ボタンでアプリを終了します。ゲーム中も動かしっぱなしにしたい場合は、設定 → 動作 で「トレイに格納」をオンにできます。
+              ×ボタンでアプリを終了します。ゲーム中も動かしっぱなしにしたい場合は、設定 → 動作 で「×ボタンでトレイに最小化」をオンにできます。
             </p>
             <button class="btn btn--ghost btn--small" id="tray-hint-dismiss" type="button">
               了解
@@ -110,9 +142,9 @@
 
           <section class="info-card">
             <div class="info-card__header">
-              <h2 class="info-card__title">操作対象</h2>
+              <h2 class="info-card__title">プリセット</h2>
               <span class="mute-badge" id="mute-badge" hidden>ミュート中</span>
-              <select class="preset-select" id="preset-select" title="VCプリセット"></select>
+              <select class="preset-select" id="preset-select" title="操作対象のプリセット"></select>
             </div>
             <dl class="info-list">
               <div class="info-list__row">

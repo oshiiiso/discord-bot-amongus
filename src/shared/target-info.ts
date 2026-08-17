@@ -1,14 +1,6 @@
 import { PresetSummary, TargetInfo, VcPreset } from './types';
 
-export function formatPresetLabel(
-  presetName: string,
-  guildName: string | null | undefined,
-  voiceChannelName: string | null | undefined,
-): string {
-  if (guildName && voiceChannelName) {
-    return `${guildName} / ${voiceChannelName}`;
-  }
-
+export function formatPresetLabel(presetName: string): string {
   return presetName.trim() || '名称未設定';
 }
 

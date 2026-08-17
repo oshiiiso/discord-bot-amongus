@@ -16,11 +16,4 @@ export class MuteSessionTracker {
   isActive(guildId: string, voiceChannelId: string): boolean {
     return this.activeSessions.has(this.key(guildId, voiceChannelId));
   }
-
-  getActiveSessions(): Array<{ guildId: string; voiceChannelId: string }> {
-    return [...this.activeSessions].map((key) => {
-      const [guildId, voiceChannelId] = key.split(':');
-      return { guildId, voiceChannelId };
-    });
-  }
 }

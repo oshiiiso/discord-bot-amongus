@@ -28,36 +28,52 @@
 
       <main class="panel panel--contact">
         <form class="contact-form" id="contact-form">
-          <p class="contact-form__lead">
-            不具合や要望をお送りください。メールアプリまたはIssueページが開きます。
-          </p>
+          <div class="contact-form__body">
+            <p class="contact-form__lead">
+              不具合や要望をお送りください。メールアプリまたはIssueページが開きます。
+            </p>
 
-          <label class="field">
-            <span>件名</span>
-            <input id="contact-subject" type="text" placeholder="例: ミュートが効かない" required />
-          </label>
+            <label class="field">
+              <span>件名</span>
+              <input
+                id="contact-subject"
+                type="text"
+                placeholder="例: ミュートが効かない"
+                maxlength="120"
+                required
+              />
+            </label>
 
-          <label class="field">
-            <span>連絡先（任意）</span>
-            <input id="contact-reply" type="text" placeholder="Discord名やメール" />
-          </label>
+            <label class="field">
+              <span>連絡先（任意）</span>
+              <input
+                id="contact-reply"
+                type="text"
+                placeholder="Discord名やメール"
+                maxlength="120"
+              />
+            </label>
 
-          <label class="field">
-            <span>内容</span>
-            <textarea
-              id="contact-message"
-              rows="8"
-              placeholder="状況や再現手順を書いてください"
-              required
-            ></textarea>
-          </label>
+            <label class="field">
+              <span>内容</span>
+              <textarea
+                id="contact-message"
+                rows="6"
+                placeholder="状況や再現手順を書いてください"
+                maxlength="4000"
+                required
+              ></textarea>
+            </label>
+          </div>
 
-          <p class="contact-form__version" id="contact-version"></p>
+          <div class="contact-form__footer">
+            <p class="contact-form__version" id="contact-version"></p>
 
-          <button class="btn btn--primary btn--block" id="contact-submit" type="submit">
-            送信
-          </button>
-          <p class="contact-form__feedback" id="contact-feedback" aria-live="polite"></p>
+            <button class="btn btn--primary btn--block" id="contact-submit" type="submit">
+              送信
+            </button>
+            <p class="contact-form__feedback" id="contact-feedback" aria-live="polite"></p>
+          </div>
         </form>
       </main>
     </div>

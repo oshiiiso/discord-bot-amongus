@@ -39,7 +39,7 @@ copy .env.example .env   # 任意
 npm start
 ```
 
-開発時も配布版と同じ挙動にするには、プロジェクトルートに `.portable` を置く（リポジトリに同梱済み）。
+開発時は `.env.dist` の公開設定が読み込まれ、`.env` で上書きできます。設定・ログは常にプロジェクトルートの `data/` / `logs/` に保存されます（配布版と同じ挙動）。
 
 ### 環境変数（`.env`）
 
@@ -71,7 +71,7 @@ npm start
 ```
 AmongUs-Bot/
   AmongUs-Bot.exe
-  .portable              # ポータブルモードのマーカー（同梱）
+  .portable              # ポータブル配布のマーカー（同梱・削除しない）
   .env                   # 問い合わせ先・アップデート設定（配布時に同梱）
   data/config.json       # 初回起動後に作成（Botトークン・VC設定）
   logs/                  # 初回起動後に作成

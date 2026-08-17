@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import { app, BrowserWindow } from 'electron';
 import dotenv from 'dotenv';
@@ -17,8 +18,19 @@ import { registerMenuHandlers } from './ipc/menu-handlers';
 import { setupAutoUpdater, onUpdateStatus } from './updater';
 import { WindowManager } from './windows/window-manager';
 
+function loadEnv(): void {
+  if (!app.isPackaged) {
+    const distEnvPath = path.join(process.cwd(), '.env.dist');
+    if (fs.existsSync(distEnvPath)) {
+      dotenv.config({ path: distEnvPath });
+    }
+  }
+
+  dotenv.config({ path: getEnvPath() });
+}
+
 initializeAppPaths();
-dotenv.config({ path: getEnvPath() });
+loadEnv();
 setupLogging({ logDir: getLogDir() });
 
 const logger = getLogger('main');
@@ -69,7 +81,7 @@ async function stopBot(): Promise<void> {
 function setupApp(): void {
   configStore = new ConfigStore();
   botManager = new BotManager();
-  logger.info('アプリ起動（ポータブル版）');
+  logger.info(app.isPackaged ? 'アプリ起動（配布版）' : 'アプリ起動（開発版）');
   windowManager = new WindowManager(
     getUiPath,
     preloadPath,
@@ -154,7 +166,11 @@ if (!gotLock) {
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      windowManager.createMainWindow();
+      const window = windowManager.createMainWindow();
+      window.once('ready-to-show', () => {
+        window.show();
+        window.focus();
+      });
     }
   });
 }

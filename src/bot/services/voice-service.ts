@@ -165,14 +165,6 @@ export class VoiceService {
     };
   }
 
-  async checkPermissions(
-    guildId: string,
-    voiceChannelId: string,
-  ): Promise<string | null> {
-    const channel = await this.getVoiceChannel(guildId, voiceChannelId);
-    return checkVoiceChannelPermissions(channel).warning;
-  }
-
   private async runBulkMute(
     guildId: string,
     voiceChannelId: string,
@@ -210,6 +202,17 @@ export class VoiceService {
     }
 
     const affectedCount = await this.applyServerMute(members, mute, true);
+
+    if (mute && members.length > 0 && affectedCount === 0) {
+      this.muteSession.deactivate(guildId, voiceChannelId);
+      return {
+        success: false,
+        affectedCount: 0,
+        message: MSG.mute.allFailed,
+        muteSessionActive: false,
+      };
+    }
+
     const message = mute
       ? MSG.mute.muted(affectedCount)
       : MSG.mute.unmuted(affectedCount);

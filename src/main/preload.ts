@@ -21,6 +21,7 @@ const CH = {
   GET_HELP_CONTENT: 'help:content',
   OPEN_HELP: 'help:open',
   OPEN_CONTACT: 'contact:open',
+  OPEN_EXTERNAL: 'app:open-external',
   SUBMIT_CONTACT: 'contact:submit',
   GET_UPDATE_STATUS: 'update:status',
   CHECK_FOR_UPDATES: 'update:check',
@@ -54,6 +55,7 @@ const api = {
   getHelpContent: () => ipcRenderer.invoke(CH.GET_HELP_CONTENT),
   openHelp: () => ipcRenderer.invoke(CH.OPEN_HELP),
   openContact: () => ipcRenderer.invoke(CH.OPEN_CONTACT),
+  openExternal: (url: string) => ipcRenderer.invoke(CH.OPEN_EXTERNAL, url),
   submitContact: (input: {
     subject: string;
     message: string;

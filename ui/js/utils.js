@@ -21,10 +21,21 @@ function getErrorMessage(error, fallback = 'エラーが発生しました') {
   return error instanceof Error ? error.message : fallback;
 }
 
-function formatPresetLabel(presetName, guildName, voiceChannelName) {
+function formatPresetLabel(presetName) {
+  return presetName?.trim() || '名称未設定';
+}
+
+function formatPresetDetail(guildName, voiceChannelName) {
   if (guildName && voiceChannelName) {
     return `${guildName} / ${voiceChannelName}`;
   }
 
-  return presetName?.trim() || '名称未設定';
+  return '';
+}
+
+function createPresetId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return `preset-${Date.now()}`;
 }

@@ -51,11 +51,6 @@ export function setupAutoUpdater(): void {
   const info = getAppInfo();
 
   if (!info.updatesEnabled) {
-    setStatus({
-      state: 'disabled',
-      currentVersion: info.version,
-      message: MSG.update.disabled,
-    });
     return;
   }
 

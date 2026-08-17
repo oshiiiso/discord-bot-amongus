@@ -16,7 +16,8 @@
     "discord.js": "^14.22.1",
     "dotenv": "^17.2.1",
     "electron-store": "^8.2.0",
-    "electron-updater": "^6.8.9"
+    "electron-updater": "^6.8.9",
+    "marked": "^15.0.12"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",

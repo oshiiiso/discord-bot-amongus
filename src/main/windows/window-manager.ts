@@ -147,9 +147,9 @@ export class WindowManager {
     this.contactWindow = new BrowserWindow(
       getFramelessWindowOptions({
         width: 480,
-        height: 520,
+        height: 600,
         minWidth: 400,
-        minHeight: 420,
+        minHeight: 560,
         resizable: false,
         title: `${APP_CONFIG.name} 問い合わせ`,
         webPreferences: this.getWebPreferences(),
