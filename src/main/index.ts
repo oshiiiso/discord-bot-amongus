@@ -7,7 +7,6 @@ import {
   getEnvPath,
   getLogDir,
   initializeAppPaths,
-  isPortableMode,
 } from '../shared/app-paths';
 import { IpcChannels } from '../shared/ipc-channels';
 import { closeLogging, getLogger, setupLogging } from '../shared/logging-config';
@@ -15,7 +14,6 @@ import { MSG } from '../shared/messages';
 import { getErrorMessage } from '../shared/error-utils';
 import { registerIpcHandlers } from './ipc/register-handlers';
 import { registerMenuHandlers } from './ipc/menu-handlers';
-import { registerStorageHandlers } from './ipc/storage-handlers';
 import { setupAutoUpdater, onUpdateStatus } from './updater';
 import { WindowManager } from './windows/window-manager';
 
@@ -71,11 +69,7 @@ async function stopBot(): Promise<void> {
 function setupApp(): void {
   configStore = new ConfigStore();
   botManager = new BotManager();
-  logger.info(
-    isPortableMode()
-      ? 'アプリ起動（ポータブルモード）'
-      : 'アプリ起動',
-  );
+  logger.info('アプリ起動（ポータブル版）');
   windowManager = new WindowManager(
     getUiPath,
     preloadPath,
@@ -94,11 +88,6 @@ function setupApp(): void {
     restartBot,
     () => windowManager.getMainWindow(),
   );
-
-  registerStorageHandlers(() => {
-    app.relaunch();
-    app.exit(0);
-  });
 
   registerMenuHandlers(windowManager);
 

@@ -30,7 +30,6 @@ export interface AppConfig {
   shortcuts: ShortcutConfig;
   minimizeToTray: boolean;
   trayHintDismissed: boolean;
-  storageLocationConfirmed: boolean;
 }
 
 /** 設定画面向け（トークンは含めない） */
@@ -40,7 +39,6 @@ export interface AppConfigView {
   shortcuts: ShortcutConfig;
   minimizeToTray: boolean;
   trayHintDismissed: boolean;
-  storageLocationConfirmed: boolean;
   hasDiscordToken: boolean;
 }
 
@@ -51,7 +49,6 @@ export interface AppConfigSaveInput {
   shortcuts?: Partial<ShortcutConfig>;
   minimizeToTray?: boolean;
   trayHintDismissed?: boolean;
-  storageLocationConfirmed?: boolean;
 }
 
 export interface PresetSummary {
@@ -102,5 +99,4 @@ export const DEFAULT_CONFIG: AppConfig = {
   },
   minimizeToTray: false,
   trayHintDismissed: false,
-  storageLocationConfirmed: false,
 };

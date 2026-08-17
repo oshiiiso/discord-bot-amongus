@@ -87,18 +87,14 @@ AmongUs-Bot/
 npm run dist
 ```
 
-`dist` は `dist:portable` と同じ。`.portable` を同梱した ZIP を生成する。
+`.portable` と `.env.dist`（→ `.env` として同梱）が ZIP に含まれる。
 
 | コマンド | 出力 |
 |---|---|
 | `npm run pack` | `release/win-unpacked/`（ZIP 化前の確認用） |
 | `npm run dist` | `release/AmongUs-Bot-x.x.x-win.zip` |
 
-### 配布 ZIP の作り方
-
-1. `npm run dist` を実行
-2. `release/win-unpacked/` に公開用 `.env` を置く（または ZIP 解凍後に手動で同梱）
-3. 必要なら再 ZIP 化して [Releases](https://github.com/oshiiiso/discord-bot-amongus/releases) にアップロード
+配布用の公開設定は `.env.dist` を編集する。GitHub Releases にアップロードするとアップデート通知が有効になる。
 
 ## アーキテクチャ（概要）
 

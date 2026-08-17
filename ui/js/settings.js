@@ -8,11 +8,6 @@ const addPresetBtn = document.getElementById('add-preset-btn');
 const shortcutMuteInput = document.getElementById('shortcut-mute');
 const shortcutUnmuteInput = document.getElementById('shortcut-unmute');
 const minimizeToTrayInput = document.getElementById('minimize-to-tray');
-const storageField = document.getElementById('storage-field');
-const storagePath = document.getElementById('storage-path');
-const storageChangeBtn = document.getElementById('storage-change-btn');
-const storageResetBtn = document.getElementById('storage-reset-btn');
-const storagePortableNote = document.getElementById('storage-portable-note');
 const tabButtons = [...document.querySelectorAll('.settings-tab')];
 const tabPanels = [...document.querySelectorAll('.settings-tab-panel')];
 
@@ -25,53 +20,6 @@ let presetInfoMap = new Map();
 function setFeedback(message, type = '') {
   setFeedbackBar(feedback, message, type);
 }
-
-async function loadStorageInfo() {
-  if (!window.amongUsBot?.getStorageInfo) {
-    return;
-  }
-
-  const info = await window.amongUsBot.getStorageInfo();
-
-  if (info.portable) {
-    storageField.hidden = true;
-    storagePortableNote.hidden = false;
-    return;
-  }
-
-  storageField.hidden = false;
-  storagePortableNote.hidden = true;
-  storagePath.textContent = info.dataDir;
-  storageResetBtn.disabled = info.dataDir === info.defaultDataDir;
-}
-
-async function changeStorageDir(targetDir) {
-  const result = await window.amongUsBot.changeDataDir(targetDir);
-  if (!result?.success) {
-    setFeedback(
-      result?.message || '保存先の変更に失敗しました',
-      'error',
-    );
-    return;
-  }
-
-  setFeedback('保存先を変更しました。再起動します...', 'success');
-}
-
-storageChangeBtn.addEventListener('click', () => {
-  void (async () => {
-    const picked = await window.amongUsBot.pickDataDir();
-    if (!picked) {
-      return;
-    }
-
-    await changeStorageDir(picked);
-  })();
-});
-
-storageResetBtn.addEventListener('click', () => {
-  void changeStorageDir(null);
-});
 
 function switchTab(tabId) {
   tabButtons.forEach((button) => {
@@ -358,7 +306,6 @@ async function loadConfig() {
   hasStoredToken = config.hasDiscordToken;
   tokenEditing = false;
   updateTokenField();
-  await loadStorageInfo();
 }
 
 form.addEventListener('submit', async (event) => {

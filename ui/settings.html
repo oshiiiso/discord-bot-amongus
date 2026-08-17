@@ -112,21 +112,8 @@
 
             <section class="settings-tab-panel" role="tabpanel" data-tab-panel="behavior">
               <h2 class="settings-tab-panel__title">動作</h2>
-              <div class="field" id="storage-field" hidden>
-                <span>設定の保存先</span>
-                <p class="field__path" id="storage-path"></p>
-                <div class="input-row">
-                  <button class="btn btn--ghost btn--small" id="storage-change-btn" type="button">
-                    変更
-                  </button>
-                  <button class="btn btn--ghost btn--small" id="storage-reset-btn" type="button">
-                    デフォルトに戻す
-                  </button>
-                </div>
-                <small id="storage-hint">変更後はアプリが再起動します</small>
-              </div>
-              <p class="settings-tab-panel__hint" id="storage-portable-note" hidden>
-                ポータブル版のため、アプリフォルダ内に保存されます。
+              <p class="settings-tab-panel__hint">
+                設定とログは exe と同じフォルダ内（data / logs）に保存されます。
               </p>
               <label class="field field--checkbox">
                 <input id="minimize-to-tray" name="minimizeToTray" type="checkbox" />

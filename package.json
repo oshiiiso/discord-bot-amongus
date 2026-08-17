@@ -10,9 +10,7 @@
     "start": "npm run build && electron .",
     "dev": "tsc && electron .",
     "pack": "npm run build && electron-builder --dir",
-    "dist:portable": "npm run build && electron-builder --win zip -c.extraFiles.0.from=.portable -c.extraFiles.0.to=.portable",
-    "dist:installer": "npm run build && electron-builder --win nsis",
-    "dist": "npm run dist:portable"
+    "dist": "npm run build && electron-builder --win zip"
   },
   "dependencies": {
     "discord.js": "^14.22.1",
@@ -39,14 +37,25 @@
       "docs/**/*",
       "package.json"
     ],
+    "extraFiles": [
+      {
+        "from": ".portable",
+        "to": ".portable"
+      },
+      {
+        "from": ".env.dist",
+        "to": ".env"
+      }
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "oshiiiso",
+      "repo": "discord-bot-amongus"
+    },
     "win": {
       "target": [
         "zip"
       ]
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
     }
   }
 }

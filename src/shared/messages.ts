@@ -58,18 +58,6 @@ export const MSG = {
     missingMuteMembers: 'Botに「メンバーをミュート」権限がありません',
     blocked: '権限不足のためミュートできません',
   },
-  storage: {
-    pickTitle: '設定の保存先を選ぶ',
-    changeFailed: '保存先の変更に失敗しました',
-    changeOk: '保存先を変更しました。再起動します...',
-    currentLabel: '設定の保存先',
-    changeButton: '変更',
-    defaultButton: 'デフォルトに戻す',
-    firstRunLead: '設定ファイルの保存先を選んでください。',
-    firstRunUseDefault: 'このまま使う',
-    firstRunChange: '保存先を変更',
-    portableNote: 'ポータブル版のため、アプリフォルダ内に保存されます。',
-  },
   menu: {
     help: 'ヘルプ',
     contact: '問い合わせ',

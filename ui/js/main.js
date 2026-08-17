@@ -22,10 +22,6 @@ const permissionWarning = document.getElementById('permission-warning');
 const historyList = document.getElementById('history-list');
 const trayHint = document.getElementById('tray-hint');
 const trayHintDismiss = document.getElementById('tray-hint-dismiss');
-const storageSetup = document.getElementById('storage-setup');
-const storageSetupPath = document.getElementById('storage-setup-path');
-const storageSetupChange = document.getElementById('storage-setup-change');
-const storageSetupConfirm = document.getElementById('storage-setup-confirm');
 const updateBanner = document.getElementById('update-banner');
 const updateBannerText = document.getElementById('update-banner-text');
 const updateBannerActions = document.getElementById('update-banner-actions');
@@ -35,7 +31,6 @@ let targetRefreshTimer = null;
 let isSetupMode = false;
 let awaitingSetupConnection = false;
 let presetInfoMap = new Map();
-let storageInfo = null;
 
 const stateLabels = {
   ready: '接続済み',
@@ -173,40 +168,13 @@ function renderUpdateBanner(status) {
 }
 
 function renderTrayHint(config) {
-  const storageReady =
-    storageInfo?.portable || config.storageLocationConfirmed;
-
   const show =
     !isSetupMode &&
     config.hasDiscordToken &&
-    storageReady &&
     !config.trayHintDismissed;
 
   trayHint.hidden = !show;
   window.dispatchEvent(new Event('layoutchange'));
-}
-
-function renderStorageSetup(config) {
-  const show =
-    !isSetupMode &&
-    config.hasDiscordToken &&
-    storageInfo?.canChange &&
-    !config.storageLocationConfirmed;
-
-  storageSetup.hidden = !show;
-  if (show && storageInfo) {
-    storageSetupPath.textContent = storageInfo.dataDir;
-  }
-  window.dispatchEvent(new Event('layoutchange'));
-}
-
-async function refreshStorageInfo() {
-  if (!window.amongUsBot?.getStorageInfo) {
-    storageInfo = null;
-    return;
-  }
-
-  storageInfo = await window.amongUsBot.getStorageInfo();
 }
 
 function renderPresetOptions(config) {
@@ -394,7 +362,6 @@ async function refreshConfig() {
   await refreshStorageInfo();
   renderPresetOptions(config);
   renderShortcuts(config);
-  renderStorageSetup(config);
   renderTrayHint(config);
   return config;
 }
@@ -571,7 +538,6 @@ window.amongUsBot.onConfigChanged((config) => {
 
   renderPresetOptions(config);
   renderShortcuts(config);
-  renderStorageSetup(config);
   renderTrayHint(config);
 
   if (!isSetupMode) {
@@ -592,39 +558,6 @@ trayHintDismiss.addEventListener('click', () => {
   })();
 });
 
-storageSetupConfirm.addEventListener('click', () => {
-  void (async () => {
-    try {
-      const saved = await window.amongUsBot.saveConfig({
-        storageLocationConfirmed: true,
-      });
-      renderStorageSetup(saved);
-      renderTrayHint(saved);
-    } catch (error) {
-      setFeedback(getErrorMessage(error, '保存に失敗しました'), 'error');
-    }
-  })();
-});
-
-storageSetupChange.addEventListener('click', () => {
-  void (async () => {
-    try {
-      const picked = await window.amongUsBot.pickDataDir();
-      if (!picked) {
-        return;
-      }
-
-      await window.amongUsBot.saveConfig({ storageLocationConfirmed: true });
-      const result = await window.amongUsBot.changeDataDir(picked);
-      if (!result?.success) {
-        setFeedback(result?.message || '保存先の変更に失敗しました', 'error');
-      }
-    } catch (error) {
-      setFeedback(getErrorMessage(error, '保存先の変更に失敗しました'), 'error');
-    }
-  })();
-});
-
 async function init() {
   if (!window.amongUsBot) {
     setFeedback('アプリの初期化に失敗しました', 'error');
@@ -636,7 +569,6 @@ async function init() {
     targetRefreshMs = runtime.targetRefreshMs;
 
     const config = await window.amongUsBot.getConfig();
-    await refreshStorageInfo();
     renderPresetOptions(config);
     renderShortcuts(config);
     renderStorageSetup(config);
