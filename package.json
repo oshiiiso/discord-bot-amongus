@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Among Us用 VCサーバーミュート操作",
   "main": "dist/main/index.js",
-  "author": "",
+  "author": "oshiiiso",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
