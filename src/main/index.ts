@@ -81,7 +81,7 @@ async function stopBot(): Promise<void> {
 function setupApp(): void {
   configStore = new ConfigStore();
   botManager = new BotManager();
-  logger.info(app.isPackaged ? 'アプリ起動（配布版）' : 'アプリ起動（開発版）');
+  logger.info(app.isPackaged ? 'アプリ起動（ビルド版）' : 'アプリ起動（開発版）');
   windowManager = new WindowManager(
     getUiPath,
     preloadPath,

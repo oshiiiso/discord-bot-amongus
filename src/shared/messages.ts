@@ -85,7 +85,7 @@ export const MSG = {
     invalidDestination: '問い合わせ先の設定が正しくありません',
   },
   update: {
-    disabled: 'アップデート確認は配布版（ZIP）でのみ利用できます',
+    disabled: 'アップデート確認はビルド版（ZIP）でのみ利用できます',
     checking: 'アップデートを確認中...',
     available: (v: string) => `バージョン ${v} が利用できます`,
     notAvailable: '最新バージョンです',

@@ -10,7 +10,8 @@
     "start": "npm run build && electron .",
     "dev": "tsc && electron .",
     "pack": "npm run build && electron-builder --dir",
-    "dist": "npm run build && electron-builder --win zip"
+    "dist": "npm run build && electron-builder --win zip",
+    "dist:dir": "npm run build && electron-builder --win dir --publish never"
   },
   "dependencies": {
     "discord.js": "^14.22.1",
@@ -48,11 +49,7 @@
         "to": ".env"
       }
     ],
-    "publish": {
-      "provider": "github",
-      "owner": "oshiiiso",
-      "repo": "discord-bot-amongus"
-    },
+    "publish": null,
     "win": {
       "target": [
         "zip"
