@@ -8,11 +8,6 @@ const addPresetBtn = document.getElementById('add-preset-btn');
 const shortcutMuteInput = document.getElementById('shortcut-mute');
 const shortcutUnmuteInput = document.getElementById('shortcut-unmute');
 const minimizeToTrayInput = document.getElementById('minimize-to-tray');
-const storageField = document.getElementById('storage-field');
-const storagePath = document.getElementById('storage-path');
-const storageChangeBtn = document.getElementById('storage-change-btn');
-const storageResetBtn = document.getElementById('storage-reset-btn');
-const storagePortableNote = document.getElementById('storage-portable-note');
 const tabButtons = [...document.querySelectorAll('.settings-tab')];
 const tabPanels = [...document.querySelectorAll('.settings-tab-panel')];
 
@@ -25,53 +20,6 @@ let presetInfoMap = new Map();
 function setFeedback(message, type = '') {
   setFeedbackBar(feedback, message, type);
 }
-
-async function loadStorageInfo() {
-  if (!window.amongUsBot?.getStorageInfo) {
-    return;
-  }
-
-  const info = await window.amongUsBot.getStorageInfo();
-
-  if (info.portable) {
-    storageField.hidden = true;
-    storagePortableNote.hidden = false;
-    return;
-  }
-
-  storageField.hidden = false;
-  storagePortableNote.hidden = true;
-  storagePath.textContent = info.dataDir;
-  storageResetBtn.disabled = info.dataDir === info.defaultDataDir;
-}
-
-async function changeStorageDir(targetDir) {
-  const result = await window.amongUsBot.changeDataDir(targetDir);
-  if (!result?.success) {
-    setFeedback(
-      result?.message || '保存先の変更に失敗しました',
-      'error',
-    );
-    return;
-  }
-
-  setFeedback('保存先を変更しました。再起動します...', 'success');
-}
-
-storageChangeBtn.addEventListener('click', () => {
-  void (async () => {
-    const picked = await window.amongUsBot.pickDataDir();
-    if (!picked) {
-      return;
-    }
-
-    await changeStorageDir(picked);
-  })();
-});
-
-storageResetBtn.addEventListener('click', () => {
-  void changeStorageDir(null);
-});
 
 function switchTab(tabId) {
   tabButtons.forEach((button) => {
@@ -231,15 +179,9 @@ function renderPresetList() {
 
   presets.forEach((preset, index) => {
     const info = presetInfoMap.get(preset.id);
-    const resolved = formatPresetLabel(
-      preset.name,
-      info?.guildName,
-      info?.voiceChannelName,
-    );
+    const detail = formatPresetDetail(info?.guildName, info?.voiceChannelName);
     const showResolved =
-      info?.guildName &&
-      info?.voiceChannelName &&
-      resolved !== (preset.name || `プリセット${index + 1}`);
+      detail && detail !== (preset.name || `プリセット${index + 1}`);
 
     const card = document.createElement('div');
     card.className = 'preset-card';
@@ -248,10 +190,10 @@ function renderPresetList() {
     card.innerHTML = `
       <div class="preset-card__header">
         <label class="preset-card__active">
-          <input type="radio" name="active-preset" value="${preset.id}" ${
+          <input type="radio" name="active-preset" value="${escapeHtml(preset.id)}" ${
             preset.id === activePresetId ? 'checked' : ''
           } />
-          <span>メインで使う</span>
+          <span>起動時に使うプリセット</span>
         </label>
         <button class="btn btn--ghost btn--small preset-card__delete" type="button" ${
           presets.length <= 1 ? 'disabled' : ''
@@ -259,7 +201,7 @@ function renderPresetList() {
       </div>
       ${
         showResolved
-          ? `<p class="preset-card__target">${escapeHtml(resolved)}</p>`
+          ? `<p class="preset-card__target">${escapeHtml(detail)}</p>`
           : ''
       }
       <label class="field">
@@ -358,7 +300,6 @@ async function loadConfig() {
   hasStoredToken = config.hasDiscordToken;
   tokenEditing = false;
   updateTokenField();
-  await loadStorageInfo();
 }
 
 form.addEventListener('submit', async (event) => {

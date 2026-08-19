@@ -15,6 +15,8 @@ import { WindowManager } from '../windows/window-manager';
 
 const logger = getLogger('ipc');
 
+let muteOperationInFlight = false;
+
 function broadcastConfigChanged(
   configStore: ConfigStore,
   windowManager: WindowManager,
@@ -71,6 +73,14 @@ async function executeMuteAction(
   windowManager: WindowManager,
   getMainWindow: () => BrowserWindow | null,
 ): Promise<MuteOperationResult> {
+  if (muteOperationInFlight) {
+    return {
+      success: false,
+      affectedCount: 0,
+      message: MSG.mute.busy,
+    };
+  }
+
   const preset = configStore.getActivePreset();
   if (!preset) {
     return {
@@ -87,6 +97,8 @@ async function executeMuteAction(
       message: MSG.preset.idsRequired,
     };
   }
+
+  muteOperationInFlight = true;
 
   try {
     if (action === 'mute') {
@@ -132,6 +144,8 @@ async function executeMuteAction(
     };
     recordOperation(action, preset.name, result, windowManager);
     return result;
+  } finally {
+    muteOperationInFlight = false;
   }
 }
 
@@ -147,28 +161,36 @@ export class ShortcutManager {
   register(): void {
     this.unregister();
     const config = this.configStore.get();
+    const muteAccelerator = config.shortcuts.muteAll.trim();
+    const unmuteAccelerator = config.shortcuts.unmuteAll.trim();
 
-    this.registerOne(config.shortcuts.muteAll, async () => {
-      const result = await executeMuteAction(
-        'mute',
-        this.botManager,
-        this.configStore,
-        this.windowManager,
-        this.getMainWindow,
-      );
-      this.onAction(result);
-    });
+    if (muteAccelerator) {
+      this.registerOne(muteAccelerator, async () => {
+        const result = await executeMuteAction(
+          'mute',
+          this.botManager,
+          this.configStore,
+          this.windowManager,
+          this.getMainWindow,
+        );
+        this.onAction(result);
+      });
+    }
 
-    this.registerOne(config.shortcuts.unmuteAll, async () => {
-      const result = await executeMuteAction(
-        'unmute',
-        this.botManager,
-        this.configStore,
-        this.windowManager,
-        this.getMainWindow,
-      );
-      this.onAction(result);
-    });
+    if (unmuteAccelerator && unmuteAccelerator !== muteAccelerator) {
+      this.registerOne(unmuteAccelerator, async () => {
+        const result = await executeMuteAction(
+          'unmute',
+          this.botManager,
+          this.configStore,
+          this.windowManager,
+          this.getMainWindow,
+        );
+        this.onAction(result);
+      });
+    } else if (unmuteAccelerator && unmuteAccelerator === muteAccelerator) {
+      logger.warning('ミュートと解除のショートカットが同じため、解除は登録しませんでした');
+    }
   }
 
   unregister(): void {

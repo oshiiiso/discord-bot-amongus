@@ -3,22 +3,22 @@
   "version": "0.1.0",
   "description": "Among Us用 VCサーバーミュート操作",
   "main": "dist/main/index.js",
-  "author": "",
+  "author": "oshiiiso",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
     "start": "npm run build && electron .",
     "dev": "tsc && electron .",
     "pack": "npm run build && electron-builder --dir",
-    "dist:portable": "npm run build && electron-builder --win zip -c.extraFiles.0.from=.portable -c.extraFiles.0.to=.portable",
-    "dist:installer": "npm run build && electron-builder --win nsis",
-    "dist": "npm run dist:portable"
+    "dist": "npm run build && electron-builder --win zip",
+    "dist:dir": "npm run build && electron-builder --win dir --publish never"
   },
   "dependencies": {
     "discord.js": "^14.22.1",
     "dotenv": "^17.2.1",
     "electron-store": "^8.2.0",
-    "electron-updater": "^6.8.9"
+    "electron-updater": "^6.8.9",
+    "marked": "^15.0.12"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
@@ -39,14 +39,21 @@
       "docs/**/*",
       "package.json"
     ],
+    "extraFiles": [
+      {
+        "from": ".portable",
+        "to": ".portable"
+      },
+      {
+        "from": ".env.dist",
+        "to": ".env"
+      }
+    ],
+    "publish": null,
     "win": {
       "target": [
         "zip"
       ]
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
     }
   }
 }

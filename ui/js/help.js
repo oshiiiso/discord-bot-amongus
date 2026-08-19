@@ -1,101 +1,39 @@
-function escapeHtml(text) {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function inlineMarkdown(text) {
-  return escapeHtml(text)
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*([^*]+)\*/g, '<em>$1</em>');
-}
-
-function markdownToHtml(markdown) {
-  const lines = markdown.replace(/\r\n/g, '\n').split('\n');
-  const html = [];
-  let inCode = false;
-  let codeLines = [];
-  let listType = null;
-
-  function closeList() {
-    if (listType) {
-      html.push(`</${listType}>`);
-      listType = null;
-    }
+function renderMarkdown(markdown) {
+  if (typeof marked === 'undefined') {
+    throw new Error('Markdown レンダラーが読み込まれていません');
   }
 
-  function closeCode() {
-    if (!inCode) {
+  marked.setOptions({
+    gfm: true,
+    breaks: false,
+  });
+
+  marked.use({
+    renderer: {
+      html() {
+        return '';
+      },
+    },
+  });
+
+  return marked.parse(markdown || '');
+}
+
+function setupHelpLinks(container) {
+  container.addEventListener('click', (event) => {
+    const link = event.target.closest('a[href]');
+    if (!link) {
       return;
     }
 
-    html.push(`<pre><code>${escapeHtml(codeLines.join('\n'))}</code></pre>`);
-    inCode = false;
-    codeLines = [];
-  }
-
-  for (const line of lines) {
-    if (line.startsWith('```')) {
-      closeList();
-      if (inCode) {
-        closeCode();
-      } else {
-        inCode = true;
-        codeLines = [];
-      }
-      continue;
+    const href = link.getAttribute('href');
+    if (!href || href.startsWith('#')) {
+      return;
     }
 
-    if (inCode) {
-      codeLines.push(line);
-      continue;
-    }
-
-    if (!line.trim()) {
-      closeList();
-      continue;
-    }
-
-    const heading = line.match(/^(#{1,6})\s+(.+)$/);
-    if (heading) {
-      closeList();
-      const level = heading[1].length;
-      html.push(`<h${level}>${inlineMarkdown(heading[2])}</h${level}>`);
-      continue;
-    }
-
-    const bullet = line.match(/^[-*]\s+(.+)$/);
-    if (bullet) {
-      if (listType !== 'ul') {
-        closeList();
-        listType = 'ul';
-        html.push('<ul>');
-      }
-      html.push(`<li>${inlineMarkdown(bullet[1])}</li>`);
-      continue;
-    }
-
-    const ordered = line.match(/^\d+\.\s+(.+)$/);
-    if (ordered) {
-      if (listType !== 'ol') {
-        closeList();
-        listType = 'ol';
-        html.push('<ol>');
-      }
-      html.push(`<li>${inlineMarkdown(ordered[1])}</li>`);
-      continue;
-    }
-
-    closeList();
-    html.push(`<p>${inlineMarkdown(line)}</p>`);
-  }
-
-  closeList();
-  closeCode();
-  return html.join('\n');
+    event.preventDefault();
+    void window.amongUsBot?.openExternal?.(href);
+  });
 }
 
 async function init() {
@@ -106,7 +44,15 @@ async function init() {
 
   try {
     const result = await window.amongUsBot.getHelpContent();
-    container.innerHTML = markdownToHtml(result.content || '');
+    if (result.error) {
+      container.innerHTML = `<p class="help-error">${escapeHtml(
+        result.error,
+      )}</p>`;
+      return;
+    }
+
+    container.innerHTML = renderMarkdown(result.content || '');
+    setupHelpLinks(container);
   } catch (error) {
     container.innerHTML = `<p class="help-error">${escapeHtml(
       getErrorMessage(error, 'ヘルプの読み込みに失敗しました'),

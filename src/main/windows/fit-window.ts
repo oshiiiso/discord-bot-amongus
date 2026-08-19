@@ -16,6 +16,15 @@ export function fitWindowToContent(
   kind: WindowKind,
 ): FitWindowResult {
   const options = WINDOW_LAYOUT[kind];
+
+  if (!Number.isFinite(contentWidth) || !Number.isFinite(contentHeight)) {
+    return {
+      width: options.minWidth,
+      height: options.minHeight,
+      capped: false,
+    };
+  }
+
   const width = Math.min(
     options.maxWidth,
     Math.max(options.minWidth, Math.ceil(contentWidth)),

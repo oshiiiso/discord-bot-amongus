@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import { Client, GatewayIntentBits } from 'discord.js';
 import { APP_CONFIG } from '../shared/app-config';
 import { MSG } from '../shared/messages';
-import { getErrorMessage, toUserFacingBotError } from '../shared/error-utils';
+import { getErrorMessage, isFatalBotAuthError, toUserFacingBotError } from '../shared/error-utils';
 import { getLogger } from '../shared/logging-config';
 import { createPresetSummary } from '../shared/target-info';
 import { BotStatus, PresetSummary, TargetInfo, VcPreset } from '../shared/types';
@@ -32,6 +32,7 @@ export class BotManager extends EventEmitter {
   private currentToken = '';
   private reconnectAttempt = 0;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private isHandlingDisconnect = false;
   private status: BotStatus = {
     state: 'disconnected',
     username: null,
@@ -95,32 +96,47 @@ export class BotManager extends EventEmitter {
       this.reconnectAttempt = 0;
     } catch (error) {
       logger.error(`Bot再接続失敗: ${getErrorMessage(error)}`);
+      if (isFatalBotAuthError(error)) {
+        this.clearReconnectTimer();
+        this.setStatus({
+          state: 'error',
+          username: null,
+          message: toUserFacingBotError(error),
+        });
+        return;
+      }
       this.scheduleReconnect();
     }
   }
 
   private async handleUnexpectedDisconnect(): Promise<void> {
-    if (this.intentionalStop) {
+    if (this.intentionalStop || this.isHandlingDisconnect) {
       return;
     }
 
-    this.voiceService = null;
-    if (this.client) {
-      try {
-        await this.client.destroy();
-      } catch {
-        // 切断済みの場合がある
+    this.isHandlingDisconnect = true;
+
+    try {
+      this.voiceService = null;
+      if (this.client) {
+        try {
+          await this.client.destroy();
+        } catch {
+          // 切断済みの場合がある
+        }
+        this.client = null;
       }
-      this.client = null;
+
+      this.setStatus({
+        state: 'disconnected',
+        username: null,
+        message: MSG.bot.disconnectedFromDiscord,
+      });
+
+      this.scheduleReconnect();
+    } finally {
+      this.isHandlingDisconnect = false;
     }
-
-    this.setStatus({
-      state: 'disconnected',
-      username: null,
-      message: MSG.bot.disconnectedFromDiscord,
-    });
-
-    this.scheduleReconnect();
   }
 
   private async connect(token: string): Promise<void> {

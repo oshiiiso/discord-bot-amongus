@@ -1,9 +1,25 @@
 import fs from 'fs';
 import path from 'path';
 import { app } from 'electron';
+import { MSG } from './messages';
 
 function readEnv(name: string): string {
   return process.env[name]?.trim() ?? '';
+}
+
+function getIssuesUrl(): string | null {
+  const explicit = readEnv('ISSUES_URL');
+  if (explicit) {
+    return explicit;
+  }
+
+  const githubOwner = readEnv('GITHUB_OWNER');
+  const githubRepo = readEnv('GITHUB_REPO');
+  if (githubOwner && githubRepo) {
+    return `https://github.com/${githubOwner}/${githubRepo}/issues`;
+  }
+
+  return null;
 }
 
 export interface AppInfo {
@@ -28,7 +44,7 @@ export function getAppVersion(): string {
 
 export function getAppInfo(): AppInfo {
   const supportEmail = readEnv('SUPPORT_EMAIL') || null;
-  const issuesUrl = readEnv('ISSUES_URL') || null;
+  const issuesUrl = getIssuesUrl();
   const githubOwner = readEnv('GITHUB_OWNER');
   const githubRepo = readEnv('GITHUB_REPO');
   const updatesEnabled =
@@ -61,5 +77,5 @@ export function getHelpDocumentPath(): string {
     }
   }
 
-  throw new Error('利用ガイドが見つかりません');
+  throw new Error(MSG.errors.helpNotFound);
 }

@@ -8,7 +8,7 @@ export function getErrorMessage(error: unknown): string {
   return String(error);
 }
 
-function getErrorCode(error: unknown): string | undefined {
+export function getErrorCode(error: unknown): string | undefined {
   if (!error || typeof error !== 'object' || !('code' in error)) {
     return undefined;
   }
@@ -57,6 +57,21 @@ export function toUserFacingBotError(error: unknown): string {
   }
 
   return MSG.errors.connectFailed;
+}
+
+export function isFatalBotAuthError(error: unknown): boolean {
+  const message = getErrorMessage(error);
+  const code = getErrorCode(error);
+  const normalized = message.toLowerCase();
+
+  return (
+    code === 'TokenInvalid' ||
+    normalized.includes('invalid token') ||
+    normalized.includes('incorrect login') ||
+    code === 'DisallowedIntents' ||
+    normalized.includes('disallowed intents') ||
+    normalized.includes('privileged intent')
+  );
 }
 
 export function toUserFacingOperationError(error: unknown): string {

@@ -37,10 +37,6 @@ export class ConfigStore {
     const merged = {
       ...DEFAULT_CONFIG,
       ...raw,
-      storageLocationConfirmed:
-        raw.storageLocationConfirmed ??
-        // 既存ユーザーは初回ダイアログを出さない
-        (raw.discordToken?.trim() || raw.presets?.length ? true : false),
     };
 
     if (merged.presets.length > 0) {
@@ -99,7 +95,6 @@ export class ConfigStore {
       shortcuts: { ...config.shortcuts },
       minimizeToTray: config.minimizeToTray,
       trayHintDismissed: config.trayHintDismissed,
-      storageLocationConfirmed: config.storageLocationConfirmed,
       hasDiscordToken: Boolean(config.discordToken.trim()),
     };
   }

@@ -15,6 +15,10 @@ const setupCard = document.getElementById('setup-card');
 const mainContent = document.getElementById('main-content');
 const setupForm = document.getElementById('setup-form');
 const setupTokenInput = document.getElementById('setup-token');
+const setupTokenHint = document.getElementById('setup-token-hint');
+const setupPresetNameInput = document.getElementById('setup-preset-name');
+const setupGuildIdInput = document.getElementById('setup-guild-id');
+const setupVcIdInput = document.getElementById('setup-vc-id');
 const setupSubmitBtn = document.getElementById('setup-submit');
 const setupFeedback = document.getElementById('setup-feedback');
 const muteBadge = document.getElementById('mute-badge');
@@ -22,20 +26,18 @@ const permissionWarning = document.getElementById('permission-warning');
 const historyList = document.getElementById('history-list');
 const trayHint = document.getElementById('tray-hint');
 const trayHintDismiss = document.getElementById('tray-hint-dismiss');
-const storageSetup = document.getElementById('storage-setup');
-const storageSetupPath = document.getElementById('storage-setup-path');
-const storageSetupChange = document.getElementById('storage-setup-change');
-const storageSetupConfirm = document.getElementById('storage-setup-confirm');
 const updateBanner = document.getElementById('update-banner');
 const updateBannerText = document.getElementById('update-banner-text');
 const updateBannerActions = document.getElementById('update-banner-actions');
 
 let targetRefreshMs = 10000;
 let targetRefreshTimer = null;
+let setupConnectionTimer = null;
 let isSetupMode = false;
 let awaitingSetupConnection = false;
 let presetInfoMap = new Map();
-let storageInfo = null;
+
+const SETUP_CONNECTION_TIMEOUT_MS = 60_000;
 
 const stateLabels = {
   ready: '接続済み',
@@ -55,6 +57,57 @@ function setSetupFeedback(message, type = '') {
     : 'setup-card__hint';
 }
 
+function hasConfiguredPreset(config) {
+  return config.presets.some(
+    (preset) => preset.guildId?.trim() && preset.voiceChannelId?.trim(),
+  );
+}
+
+function needsInitialSetup(config) {
+  return !config.hasDiscordToken || !hasConfiguredPreset(config);
+}
+
+function focusSetupField(config) {
+  if (!config.hasDiscordToken) {
+    setupTokenInput.focus();
+    return;
+  }
+
+  if (!setupGuildIdInput.value.trim()) {
+    setupGuildIdInput.focus();
+    return;
+  }
+
+  setupVcIdInput.focus();
+}
+
+function prefillSetupForm(config) {
+  const preset =
+    config.presets.find((item) => item.id === config.activePresetId) ??
+    config.presets[0];
+
+  if (preset) {
+    setupPresetNameInput.value = preset.name || 'ゲーム用VC';
+    setupGuildIdInput.value = preset.guildId || '';
+    setupVcIdInput.value = preset.voiceChannelId || '';
+  } else {
+    setupPresetNameInput.value = 'ゲーム用VC';
+    setupGuildIdInput.value = '';
+    setupVcIdInput.value = '';
+  }
+
+  if (config.hasDiscordToken) {
+    setupTokenInput.value = '';
+    setupTokenInput.placeholder = '設定済み（変更する場合のみ入力）';
+    setupTokenInput.required = false;
+    setupTokenHint.textContent = 'トークンは保存済みです。変更しない場合は空欄のままで構いません。';
+  } else {
+    setupTokenInput.placeholder = 'Botタブでコピーしたトークン';
+    setupTokenInput.required = true;
+    setupTokenHint.textContent = 'Developer Portal の Bot タブでコピー';
+  }
+}
+
 function setSetupMode(enabled) {
   isSetupMode = enabled;
   setupCard.hidden = !enabled;
@@ -63,11 +116,13 @@ function setSetupMode(enabled) {
 }
 
 function showMainPanel() {
+  clearSetupConnectionTimer();
   awaitingSetupConnection = false;
   setSetupMode(false);
 }
 
 function showSetupPanel() {
+  clearSetupConnectionTimer();
   awaitingSetupConnection = false;
   setSetupMode(true);
 }
@@ -105,7 +160,7 @@ function renderOperationHistory(entries) {
     time.textContent = formatHistoryTime(entry.timestamp);
 
     const text = document.createElement('span');
-    const actionLabel = entry.action === 'mute' ? 'ミュート' : '解除';
+    const actionLabel = entry.action === 'mute' ? 'ミュート' : 'ミュート解除';
     text.className = `history-list__text history-list__text--${
       entry.success ? 'success' : 'error'
     }`;
@@ -123,7 +178,15 @@ function renderUpdateBanner(status) {
     return;
   }
 
-  const showStates = ['available', 'downloading', 'downloaded', 'not-available', 'error'];
+  const showStates = [
+    'available',
+    'downloading',
+    'downloaded',
+    'not-available',
+    'error',
+    'disabled',
+    'checking',
+  ];
   if (!showStates.includes(status.state)) {
     updateBanner.hidden = true;
     window.dispatchEvent(new Event('layoutchange'));
@@ -155,11 +218,11 @@ function renderUpdateBanner(status) {
     updateBannerActions.appendChild(installBtn);
   }
 
-  if (['available', 'downloaded', 'not-available', 'error'].includes(status.state)) {
+  if (['available', 'downloaded', 'not-available', 'error', 'disabled', 'checking'].includes(status.state)) {
     const dismissBtn = document.createElement('button');
     dismissBtn.className = 'btn btn--ghost btn--small';
     dismissBtn.type = 'button';
-    dismissBtn.textContent = '閉じる';
+    dismissBtn.textContent = '後で';
     dismissBtn.addEventListener('click', () => {
       updateBanner.hidden = true;
       window.dispatchEvent(new Event('layoutchange'));
@@ -173,40 +236,13 @@ function renderUpdateBanner(status) {
 }
 
 function renderTrayHint(config) {
-  const storageReady =
-    storageInfo?.portable || config.storageLocationConfirmed;
-
   const show =
     !isSetupMode &&
     config.hasDiscordToken &&
-    storageReady &&
     !config.trayHintDismissed;
 
   trayHint.hidden = !show;
   window.dispatchEvent(new Event('layoutchange'));
-}
-
-function renderStorageSetup(config) {
-  const show =
-    !isSetupMode &&
-    config.hasDiscordToken &&
-    storageInfo?.canChange &&
-    !config.storageLocationConfirmed;
-
-  storageSetup.hidden = !show;
-  if (show && storageInfo) {
-    storageSetupPath.textContent = storageInfo.dataDir;
-  }
-  window.dispatchEvent(new Event('layoutchange'));
-}
-
-async function refreshStorageInfo() {
-  if (!window.amongUsBot?.getStorageInfo) {
-    storageInfo = null;
-    return;
-  }
-
-  storageInfo = await window.amongUsBot.getStorageInfo();
 }
 
 function renderPresetOptions(config) {
@@ -225,16 +261,13 @@ function renderPresetOptions(config) {
   presetSelect.disabled = false;
   for (const preset of config.presets) {
     const info = presetInfoMap.get(preset.id);
-    const label = formatPresetLabel(
-      preset.name,
-      info?.guildName,
-      info?.voiceChannelName,
-    );
+    const label = formatPresetLabel(preset.name);
+    const detail = formatPresetDetail(info?.guildName, info?.voiceChannelName);
 
     const option = document.createElement('option');
     option.value = preset.id;
     option.textContent = label;
-    option.title = preset.name && label !== preset.name ? preset.name : label;
+    option.title = detail || label;
     option.selected = preset.id === config.activePresetId;
     presetSelect.appendChild(option);
   }
@@ -343,12 +376,36 @@ function renderStatus(status) {
   }
 }
 
+function clearSetupConnectionTimer() {
+  if (setupConnectionTimer) {
+    window.clearTimeout(setupConnectionTimer);
+    setupConnectionTimer = null;
+  }
+}
+
+function startSetupConnectionTimer() {
+  clearSetupConnectionTimer();
+  setupConnectionTimer = window.setTimeout(() => {
+    if (!awaitingSetupConnection) {
+      return;
+    }
+
+    awaitingSetupConnection = false;
+    setSetupFeedback(
+      '接続がタイムアウトしました。設定 → Bot でトークンを確認してください。',
+      'error',
+    );
+    setupSubmitBtn.disabled = false;
+  }, SETUP_CONNECTION_TIMEOUT_MS);
+}
+
 function handleSetupConnectionStatus(status) {
   if (!awaitingSetupConnection) {
     return;
   }
 
   if (status.state === 'ready') {
+    clearSetupConnectionTimer();
     showMainPanel();
     setSetupFeedback('');
     void refreshAll();
@@ -356,9 +413,10 @@ function handleSetupConnectionStatus(status) {
   }
 
   if (status.state === 'error') {
+    clearSetupConnectionTimer();
     awaitingSetupConnection = false;
     setSetupFeedback(
-      status.message || '接続できませんでした。設定 > Bot でトークンを確認してください。',
+      status.message || '接続できませんでした。設定 → Bot でトークンを確認してください。',
       'error',
     );
     setupSubmitBtn.disabled = false;
@@ -391,10 +449,8 @@ async function refreshStatus() {
 async function refreshConfig() {
   const config = await window.amongUsBot.getConfig();
   await refreshPresetInfo();
-  await refreshStorageInfo();
   renderPresetOptions(config);
   renderShortcuts(config);
-  renderStorageSetup(config);
   renderTrayHint(config);
   return config;
 }
@@ -479,35 +535,83 @@ setupForm.addEventListener('submit', (event) => {
   event.preventDefault();
 
   void (async () => {
+    const config = await window.amongUsBot.getConfig();
     const token = setupTokenInput.value.trim();
-    if (!token) {
+    const presetName = setupPresetNameInput.value.trim() || 'ゲーム用VC';
+    const guildId = setupGuildIdInput.value.trim();
+    const voiceChannelId = setupVcIdInput.value.trim();
+
+    if (!config.hasDiscordToken && !token) {
       setSetupFeedback('トークンを入力してください', 'error');
       return;
     }
 
+    if (!guildId || !voiceChannelId) {
+      setSetupFeedback('サーバーIDとVCチャンネルIDを入力してください', 'error');
+      return;
+    }
+
     setupSubmitBtn.disabled = true;
-    setSetupFeedback('接続中...');
+    setSetupFeedback('保存中...');
+
+    const existingPreset =
+      config.presets.find((item) => item.id === config.activePresetId) ??
+      config.presets[0];
+    const presetId = existingPreset?.id ?? createPresetId();
+
+    const payload = {
+      presets: [
+        {
+          id: presetId,
+          name: presetName,
+          guildId,
+          voiceChannelId,
+        },
+      ],
+      activePresetId: presetId,
+    };
+
+    if (token) {
+      payload.discordToken = token;
+    }
 
     try {
-      const saved = await window.amongUsBot.saveConfig({ discordToken: token });
-      if (!saved.hasDiscordToken) {
+      const saved = await window.amongUsBot.saveConfig(payload);
+
+      if (token && !saved.hasDiscordToken) {
         setSetupFeedback('トークンの保存に失敗しました', 'error');
         setupSubmitBtn.disabled = false;
         return;
       }
 
-      setupTokenInput.value = '';
-      awaitingSetupConnection = true;
-
-      const status = await window.amongUsBot.getBotStatus();
-      handleSetupConnectionStatus(status);
-      if (!awaitingSetupConnection) {
+      if (!hasConfiguredPreset(saved)) {
+        setSetupFeedback('プリセットの保存に失敗しました', 'error');
+        setupSubmitBtn.disabled = false;
         return;
       }
 
-      renderStatus(status);
+      setupTokenInput.value = '';
+
+      if (token) {
+        setSetupFeedback('接続中...');
+        awaitingSetupConnection = true;
+        startSetupConnectionTimer();
+
+        const status = await window.amongUsBot.getBotStatus();
+        handleSetupConnectionStatus(status);
+        if (!awaitingSetupConnection) {
+          return;
+        }
+
+        renderStatus(status);
+        return;
+      }
+
+      showMainPanel();
+      setSetupFeedback('');
+      await refreshAll();
     } catch (error) {
-      setSetupFeedback(getErrorMessage(error, '接続に失敗しました'), 'error');
+      setSetupFeedback(getErrorMessage(error, '設定の保存に失敗しました'), 'error');
     } finally {
       if (!awaitingSetupConnection) {
         setupSubmitBtn.disabled = false;
@@ -564,14 +668,15 @@ window.amongUsBot.onConfigChanged((config) => {
     return;
   }
 
-  if (!config.hasDiscordToken) {
+  if (needsInitialSetup(config)) {
     showSetupPanel();
-    setupTokenInput.focus();
+    prefillSetupForm(config);
+    focusSetupField(config);
+    return;
   }
 
   renderPresetOptions(config);
   renderShortcuts(config);
-  renderStorageSetup(config);
   renderTrayHint(config);
 
   if (!isSetupMode) {
@@ -592,39 +697,6 @@ trayHintDismiss.addEventListener('click', () => {
   })();
 });
 
-storageSetupConfirm.addEventListener('click', () => {
-  void (async () => {
-    try {
-      const saved = await window.amongUsBot.saveConfig({
-        storageLocationConfirmed: true,
-      });
-      renderStorageSetup(saved);
-      renderTrayHint(saved);
-    } catch (error) {
-      setFeedback(getErrorMessage(error, '保存に失敗しました'), 'error');
-    }
-  })();
-});
-
-storageSetupChange.addEventListener('click', () => {
-  void (async () => {
-    try {
-      const picked = await window.amongUsBot.pickDataDir();
-      if (!picked) {
-        return;
-      }
-
-      await window.amongUsBot.saveConfig({ storageLocationConfirmed: true });
-      const result = await window.amongUsBot.changeDataDir(picked);
-      if (!result?.success) {
-        setFeedback(result?.message || '保存先の変更に失敗しました', 'error');
-      }
-    } catch (error) {
-      setFeedback(getErrorMessage(error, '保存先の変更に失敗しました'), 'error');
-    }
-  })();
-});
-
 async function init() {
   if (!window.amongUsBot) {
     setFeedback('アプリの初期化に失敗しました', 'error');
@@ -636,23 +708,22 @@ async function init() {
     targetRefreshMs = runtime.targetRefreshMs;
 
     const config = await window.amongUsBot.getConfig();
-    await refreshStorageInfo();
     renderPresetOptions(config);
     renderShortcuts(config);
-    renderStorageSetup(config);
     renderTrayHint(config);
 
     const updateStatus = await window.amongUsBot.getUpdateStatus();
     renderUpdateBanner(updateStatus);
 
-    if (config.hasDiscordToken) {
-      showMainPanel();
-      await refreshAll();
+    if (needsInitialSetup(config)) {
+      showSetupPanel();
+      prefillSetupForm(config);
+      focusSetupField(config);
       return;
     }
 
-    showSetupPanel();
-    setupTokenInput.focus();
+    showMainPanel();
+    await refreshAll();
   } catch (error) {
     setFeedback(getErrorMessage(error, 'ステータス取得に失敗しました'), 'error');
     muteBtn.disabled = true;
